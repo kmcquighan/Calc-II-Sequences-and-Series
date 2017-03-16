@@ -1,8 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Copyright Kelly McQuighan 2016
+Kelly McQuighan 2017.
 
-These tools can be used to visualize different improper integrals.
+These tools can be used to visualize the concept of convergence of an infinite sequence
+versus an infinite series. An analogy is made with the convergence of a function and
+the convergence of its integral.
+
+Both the continuous (function) and the discrete (sequences) cases have two methods. 
+The 'explore' method has a fixed maximum value of the right end point. The purpose
+of this restriction is to help the use to first understand how the plots are generated. 
+The 'plot' method has a much larger right endpoint and in fact is placed on a log-scale
+to make it easier for the user to increase the right endpoint quickly.
 """
 
 import matplotlib
@@ -14,14 +22,16 @@ import matplotlib.patches as mpatches
 import matplotlib as mpl
 mpl.rcParams['font.size'] = 20
 
+"""
+This function considers the continuous function case with a small fixed right endpoint.           
+"""
 def exploreContinuous(f,b):
     
     a = 1.
     xmax = 10
     func = eval("lambda x: " + f)
         
-    fig = plt.figure(figsize=(20, 6))
-       
+    fig = plt.figure(figsize=(20, 6))       
     ax1 = fig.add_subplot(1,2,1)
     ax2 = fig.add_subplot(1,2,2)
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
@@ -29,9 +39,7 @@ def exploreContinuous(f,b):
     x = np.linspace(.5,11,1000)
     idx_a = np.where(x>=a)[0][0]
     idx_b = np.where(x>b)[0][0]
-    #x_usr = np.linspace(a,11,1000)
     y = func(x)
-    #y_usr = func(x_usr)
     ax1.set_xlim([0,1.03*xmax])
     ax1.set_ylim([0,func(0.5)])
     ax2.set_xlim([0,1.03*xmax])
@@ -44,7 +52,6 @@ def exploreContinuous(f,b):
         ax1.set_ylim([1.1*min(y), 1.1*max(y)])
     
     ax1.plot(x,y,'b',linewidth=5)
-    #ax1.hold()
     ax1.fill_between(x[idx_a:idx_b],y[idx_a:idx_b], facecolor='g', edgecolor='g', alpha=0.3, linewidth=3)
     I = np.zeros(1000)
     for i in range(1000):
@@ -70,7 +77,10 @@ def exploreContinuous(f,b):
     plt.suptitle('f(x) = '+f, fontsize=36, y=1.0)
     matplotlib.rc('xtick', labelsize=20) 
     matplotlib.rc('ytick', labelsize=20)
- 
+
+"""
+This function considers the discrete (sequence) case with a small fixed right endpoint.
+""" 
 def exploreDiscrete(f,n):     
 
     n = int(n)
@@ -136,12 +146,15 @@ def exploreDiscrete(f,n):
     plt.suptitle(r'$a_n$ = '+f, fontsize=36, y=1.0)
     matplotlib.rc('xtick', labelsize=20) 
     matplotlib.rc('ytick', labelsize=20)
-    
+
+"""
+This function considers the continuous (function) case where the right endpoint 
+increases exponentially.
+"""    
 def plotContinuous(f,m):
     
     a = 1.
     b = 10**m
-    #b=float(b)
     func = eval("lambda x: " + f)
         
     fig = plt.figure(figsize=(20, 6))
@@ -164,7 +177,6 @@ def plotContinuous(f,m):
         ax1.set_ylim([min(y_all), max(y_all)])
     
     ax1.plot(x_all,y_all,'b',linewidth=5)
-    #ax1.hold()
     ax1.fill_between(x,y, facecolor='g', edgecolor='g', alpha=0.3, linewidth=3)
     I = np.zeros(1000)
     for i in range(1000):
@@ -192,11 +204,14 @@ def plotContinuous(f,m):
     plt.suptitle('f(x) = '+f, fontsize=36, y=1.0)
     matplotlib.rc('xtick', labelsize=20) 
     matplotlib.rc('ytick', labelsize=20)
- 
+
+"""
+This function considers the discrete (sequence) case where the right endpoint 
+increases on an exponential scale.
+""" 
 def plotDiscrete(f,m):     
 
     b = int(10**m)
-    #b=float(b)
     func = eval("lambda n: " + f)
         
     fig = plt.figure(figsize=(20, 6))
@@ -244,7 +259,6 @@ def plotDiscrete(f,m):
     ax2.set_title(r'$s_k=\sum_{n=1}^k a_n$',fontsize=36, y=1.1)
     
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
-    #plt.suptitle(r'$a_n$ = '+f+ r' for $n<$ %.2e' %b, fontsize=36, y=1.2)
     plt.suptitle(r'$a_n$ = '+f, fontsize=36, y=1.0)
     matplotlib.rc('xtick', labelsize=20) 
     matplotlib.rc('ytick', labelsize=20)
