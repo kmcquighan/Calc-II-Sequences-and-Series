@@ -5,4 +5,4 @@ You can either download the files and run the Notebook on your local machine or 
 
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org:/repo/kmcquighan/calc-ii-sequences-and-series)
 
-If you download the files to your computer make sure that you have the seriesTools.py file: these are the backend functions that create the simulations in the notebook.
+If you download the files to your computer make sure that you have the SeriesTools.py file: these are the backend functions that create the simulations in the notebook.
