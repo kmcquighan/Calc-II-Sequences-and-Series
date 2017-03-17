@@ -4,3 +4,5 @@ The purpose of this Notebook is to explain the difference between convergence of
 You can either download the files and run the Notebook on your local machine or you can launch the Notebook by clicking on the mybinder.org link below.
 
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org:/repo/kmcquighan/calc-ii-sequences-and-series)
+
+If you download the files to your computer make sure that you have the seriesTools.py file: these are the backend functions that create the simulations in the notebook.
