@@ -23,69 +23,80 @@ import matplotlib as mpl
 mpl.rcParams['font.size'] = 20
 
 """
-This function considers the continuous function case with a small fixed right endpoint.           
+This function plots the continuous case based on the choice for right endpoint.
+It is a helper function that is called by both smallContinuous and largeContinuous
+where the only difference is how the right endpoint is scaled.
 """
-def exploreContinuous(f,b):
-    
+def plotContinuous(f,b,xmax):
     a = 1.
-    xmax = 10
     func = eval("lambda x: " + f)
         
-    fig = plt.figure(figsize=(20, 6))       
+    fig = plt.figure(figsize=(20, 6))
+       
     ax1 = fig.add_subplot(1,2,1)
     ax2 = fig.add_subplot(1,2,2)
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
     
-    x = np.linspace(.5,11,1000)
-    idx_a = np.where(x>=a)[0][0]
-    idx_b = np.where(x>b)[0][0]
+    x = np.linspace(0.5,xmax,1000)
     y = func(x)
-    ax1.set_xlim([0,1.03*xmax])
-    ax1.set_ylim([0,func(0.5)])
-    ax2.set_xlim([0,1.03*xmax])
-    ax2.set_ylim([0,inte.quad(func,1.,11.)[0]])
+    start = np.where(x>=a)[0][0]
+    end = np.where(x>b)[0][0]
+    ax1.set_xlim([0,xmax])
+    ax2.set_xlim([0,xmax])
     if min(y)>0.:
         ax1.set_ylim([0., max(y)])
     elif max(y)<0.:
         ax1.set_ylim([min(y), 0.])
     else:
-        ax1.set_ylim([1.1*min(y), 1.1*max(y)])
+        ax1.set_ylim([min(y), max(y)])
     
     ax1.plot(x,y,'b',linewidth=5)
-    ax1.fill_between(x[idx_a:idx_b],y[idx_a:idx_b], facecolor='g', edgecolor='g', alpha=0.3, linewidth=3)
+    ax1.fill_between(x[start:end],y[start:end], facecolor='g', edgecolor='g', alpha=0.3, linewidth=3)
     I = np.zeros(1000)
     for i in range(1000):
         I[i] = inte.quad(func,1.,x[i])[0]
-    ax2.plot(x[idx_a:idx_b],I[idx_a:idx_b],'r',linewidth=5)
-    ax2.plot(b,I[idx_b-1],'go',markersize=13)
-    if min(I[idx_a:])>0.:
-        ax2.set_ylim([0., 1.1*max(I)])
-    elif max(I[idx_a:])<0.:
-        ax2.set_ylim([1.1*min(I), 0.])
+    
+    if min(I[start:])>0.:
+        ax2.set_ylim([0., max(I[start:])])
+    elif max(I[start:])<0.:
+        ax2.set_ylim([min(I[start:]), 0.])
     else:
-        ax2.set_ylim([1.1*min(I), 1.1*max(I)])
+        ax2.set_ylim([min(I[start:]), max(I[start:])])
+    
+    ax2.plot(x[start:end],I[start:end],'r',linewidth=5)
+    ax2.plot(x[end], I[end],'go', markersize=13)
+    
+    ax1.axhline(0.,color='k',linewidth=1)
+    ax2.axhline(0.,color='k',linewidth=1)
     
     ax1.set_xlabel('x', fontsize=36)
     ax1.set_title('f(x)', fontsize=36)
     ax2.set_xlabel('b', fontsize=36)
     ax2.set_title(r'$\int_1^b f(x)dx$',fontsize=36, y=1.1)
     
-    ax1.axhline(0.,color='k',linewidth=1)
-    ax2.axhline(0.,color='k',linewidth=1)
-    
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+    #plt.suptitle('f(x) = '+f+ ' for $x\in$ [1, %.2e]' %b, fontsize=36, y=1.2)
     plt.suptitle('f(x) = '+f, fontsize=36, y=1.0)
     matplotlib.rc('xtick', labelsize=20) 
     matplotlib.rc('ytick', labelsize=20)
 
-"""
-This function considers the discrete (sequence) case with a small fixed right endpoint.
-""" 
-def exploreDiscrete(f,n):     
+# helper function to plot the arrow head correctly
+def plot_arrow(ani,sni,sn_iMinus1,i,n,ax1,ax2):
+    hl = min([0.1, 0.6*abs(ani)])
+    ax2.axhline(sni,color='k',linestyle=':', linewidth=1)
+    ax1.arrow(i+1, 0, 0, ani-np.sign(ani)*hl, head_width=0.1, head_length=abs(hl),linewidth=5, fc='g', ec='g')
+    ax2.arrow(n-.2, sn_iMinus1, 0, ani-np.sign(ani)*hl, head_width=0.1, head_length=abs(hl),linewidth=5, fc='g', ec='g')
+    
 
+"""
+This function plots the discrete case based on the choice for right endpoint.
+It is a helper function that is called by both smallDiscrete and largeDiscrete
+where the only difference is how the right endpoint is scaled.
+"""   
+def plotDiscrete(f,n,nmax,show_arrow):
+    
     n = int(n)
     func = eval("lambda n: " + f)
-    nmax = int(10)
     
     fig = plt.figure(figsize=(20, 6))
        
@@ -98,25 +109,23 @@ def exploreDiscrete(f,n):
     ax1.set_xlim([0,1.03*nmax])
     ax2.set_xlim([0,1.03*nmax])
     
-    ax1.plot(ns,an,'bo',markersize=13)
     sn = np.zeros(nmax)
     sn[0] = an[0]
-    ax2.axhline(sn[0],color='k',linestyle=':', linewidth=1)
-    hl = min([0.1, 0.6*abs(an[0])])
-    ax1.arrow(1, 0, 0, an[0]-np.sign(an[0])*hl, head_width=0.1, head_length=abs(hl),linewidth=5, fc='g', ec='g')
-    ax2.arrow(n-0.2, 0, 0, sn[0]-np.sign(an[0])*hl, head_width=0.1, head_length=abs(hl),linewidth=5, fc='g', ec='g')
-    
+
+    ones = np.ones(2)
+    if (show_arrow): plot_arrow(an[0],sn[0],0,0,n,ax1,ax2)
+    else: ax1.plot(ones,[0.,an[0]],color='g',linewidth=5) #plots a line
+        
     for i in range(1,n):
-        hl = min([0.1, 0.6*abs(an[i])])
         sn[i] = sn[i-1]+an[i]
-        ax2.axhline(sn[i],color='k',linestyle=':', linewidth=1)
-        ax1.arrow(i+1, 0, 0, an[i]-np.sign(an[i])*hl, head_width=0.1, head_length=abs(hl),linewidth=5, fc='g', ec='g')
-        ax2.arrow(n-.2, sn[i-1], 0, an[i]-np.sign(an[i])*hl, head_width=0.1, head_length=abs(hl),linewidth=5, fc='g', ec='g')
-    
+
+        if (show_arrow): plot_arrow(an[i],sn[i],sn[i-1],i,n,ax1,ax2)
+        else: ax1.plot((i+1)*ones,[0.,an[i]],color='g',linewidth=5)
+            
     for i in range(n,nmax):
         sn[i] = sn[i-1]+an[i]
     
-    hl = np.min(0.1, 0.6*an[0])
+    ax1.plot(ns,an,'bo',markersize=13)
     
     if min(an)>0.:
         ax1.set_ylim([0., 1.1*max(an)])
@@ -148,117 +157,34 @@ def exploreDiscrete(f,n):
     matplotlib.rc('ytick', labelsize=20)
 
 """
+This function considers the continuous function case with a small fixed right endpoint.           
+"""    
+def smallContinuous(f,b):
+    
+    plotContinuous(f,b,11)
+    
+
+"""
 This function considers the continuous (function) case where the right endpoint 
 increases exponentially.
 """    
-def plotContinuous(f,m):
+def largeContinuous(f,m):
     
-    a = 1.
-    b = 10**m
-    func = eval("lambda x: " + f)
-        
-    fig = plt.figure(figsize=(20, 6))
-       
-    ax1 = fig.add_subplot(1,2,1)
-    ax2 = fig.add_subplot(1,2,2)
-    plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+    plotContinuous(f,10**m,1.05*10**m)
     
-    x = np.linspace(a,b,1000)
-    x_all = np.linspace(0.5,1.03*b,1000)
-    y = func(x)
-    y_all = func(x_all)
-    ax1.set_xlim([0,1.03*b])
-    ax2.set_xlim([0,1.03*b])
-    if min(y_all)>0.:
-        ax1.set_ylim([0., max(y_all)])
-    elif max(y_all)<0.:
-        ax1.set_ylim([min(y_all), 0.])
-    else:
-        ax1.set_ylim([min(y_all), max(y_all)])
+
+"""
+This function considers the discrete (sequence) case with a small fixed right endpoint.
+""" 
+def smallDiscrete(f,n):     
     
-    ax1.plot(x_all,y_all,'b',linewidth=5)
-    ax1.fill_between(x,y, facecolor='g', edgecolor='g', alpha=0.3, linewidth=3)
-    I = np.zeros(1000)
-    for i in range(1000):
-        I[i] = inte.quad(func,1.,x[i])[0]
-    
-    if min(I)>0.:
-        ax2.set_ylim([0., 1.1*max(I)])
-    elif max(I)<0.:
-        ax2.set_ylim([1.1*min(I), 0.])
-    else:
-        ax2.set_ylim([1.1*min(I), 1.1*max(I)])
-    ax2.plot(x,I,'r',linewidth=5)
-    ax2.plot(x[999], I[999],'go', markersize=13)
-    
-    ax1.axhline(0.,color='k',linewidth=1)
-    ax2.axhline(0.,color='k',linewidth=1)
-    
-    ax1.set_xlabel('x', fontsize=36)
-    ax1.set_title('f(x)', fontsize=36)
-    ax2.set_xlabel('b', fontsize=36)
-    ax2.set_title(r'$\int_1^b f(x)dx$',fontsize=36, y=1.1)
-    
-    plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
-    #plt.suptitle('f(x) = '+f+ ' for $x\in$ [1, %.2e]' %b, fontsize=36, y=1.2)
-    plt.suptitle('f(x) = '+f, fontsize=36, y=1.0)
-    matplotlib.rc('xtick', labelsize=20) 
-    matplotlib.rc('ytick', labelsize=20)
+    plotDiscrete(f,n,11,True)
+
 
 """
 This function considers the discrete (sequence) case where the right endpoint 
 increases on an exponential scale.
 """ 
-def plotDiscrete(f,m):     
+def largeDiscrete(f,m):     
 
-    b = int(10**m)
-    func = eval("lambda n: " + f)
-        
-    fig = plt.figure(figsize=(20, 6))
-       
-    ax1 = fig.add_subplot(1,2,1)
-    ax2 = fig.add_subplot(1,2,2)
-    plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
-      
-    n = np.linspace(1,b,b)
-    an = func(n)
-    ax1.set_xlim([0,1.03*b])
-    ax2.set_xlim([0,1.03*b])
-    
-    sn = np.zeros(b)
-    sn[0] = an[0]
-    ones = np.ones(2)
-    ax1.plot(ones,[0.,an[0]],color='g',linewidth=5)
-    for i in range(b-1):
-        sn[i+1] = sn[i]+an[i+1]
-        ax1.plot((i+2)*ones,[0.,an[i+1]],color='g',linewidth=5)
-    ax1.plot(n,an,'bo',markersize=8)
-    ax2.plot(n,sn,'ro',markersize=8)
-    ax2.plot(b,sn[b-1],'go',markersize=13)
-    
-    if min(an)>0.:
-        ax1.set_ylim([0., 1.1*max(an)])
-    elif max(an)<0.:
-        ax1.set_ylim([1.1*min(an), 0.])
-    else:
-        ax1.set_ylim([1.1*min(an), 1.1*max(an)])
-        
-    if min(sn)>0.:
-        ax2.set_ylim([0., 1.1*max(sn)])
-    elif max(sn)<0.:
-        ax2.set_ylim([1.1*min(sn), 0.])
-    else:
-        ax2.set_ylim([1.1*min(sn)-0.1, 1.1*max(sn)+0.1])
-
-    ax1.axhline(0.,color='k',linewidth=1)
-    ax2.axhline(0.,color='k',linewidth=1)
-    
-    ax1.set_xlabel('n', fontsize=36)
-    ax1.set_title(r'$a_n$', fontsize=36, y=1.1)
-    ax2.set_xlabel('k', fontsize=36)
-    ax2.set_title(r'$s_k=\sum_{n=1}^k a_n$',fontsize=36, y=1.1)
-    
-    plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
-    plt.suptitle(r'$a_n$ = '+f, fontsize=36, y=1.0)
-    matplotlib.rc('xtick', labelsize=20) 
-    matplotlib.rc('ytick', labelsize=20)
+    plotDiscrete(f,10**m,int(1.05*10**m),False)
